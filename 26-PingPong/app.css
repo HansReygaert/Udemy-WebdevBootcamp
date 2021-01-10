@@ -1,0 +1,66 @@
+.wrapper{
+   margin: auto;
+   width: 50%;
+}
+.body-image img{
+   width: 100%; 
+   height: 100%;
+}
+.body-image p{
+   margin: 0;
+   font-size: small;
+}
+
+.score{
+   font-size: 2rem;
+   font-weight: bolder;
+}
+
+.score .score-comment{
+   font-size: 0.8rem;
+   font-weight: lighter;
+   margin-top: 2px;
+}
+
+.play{
+   margin-top: 2rem;
+}
+
+.play label{
+   font-weight: bold;
+}
+
+.play select{
+   margin: 10px;
+}
+
+.buttons{
+   margin-top: 5%;
+}
+
+.buttons button{
+   width: 33%;
+   height: 3rem;
+
+   font-size: large;
+   border-radius: 8px;
+   transition: color 200ms, box-shadow 200ms, font-weight 200ms
+}
+
+.buttons button:hover{
+   color:white;
+   box-shadow: inset 0 8px 8px 0 rgba(255, 255, 255, 0.3);
+   font-weight: bold;
+}
+
+#button-player1{
+   background-color: #008CBA;
+}
+#button-player2{
+   background-color: darkorange;
+}
+
+#button-reset{
+   background-color: darkred;
+   color: rgb(238, 190, 193);
+}
