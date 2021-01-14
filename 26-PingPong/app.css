@@ -41,14 +41,15 @@
 .buttons button{
    width: 33%;
    height: 3rem;
+   color:white;
 
    font-size: large;
    border-radius: 8px;
-   transition: color 200ms, box-shadow 200ms, font-weight 200ms
+   transition: color 200ms, box-shadow 200ms, font-weight 200ms;
+
 }
 
 .buttons button:hover{
-   color:white;
    box-shadow: inset 0 8px 8px 0 rgba(255, 255, 255, 0.3);
    font-weight: bold;
 }
@@ -63,4 +64,12 @@
 #button-reset{
    background-color: darkred;
    color: rgb(238, 190, 193);
+}
+
+.winner{
+   color: green; 
+   font-weight: bold;
+}
+.loser{
+   color: red;
 }

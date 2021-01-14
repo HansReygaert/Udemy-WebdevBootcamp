@@ -1,45 +1,108 @@
 const buttonPlayer1 = document.querySelector('#button-player1');
 const buttonPlayer2 = document.querySelector('#button-player2');
 const buttonReset = document.querySelector('#button-reset');
+const selectGamesToWin = document.querySelector('#gamesToWin');
+//Event updates the value in case it is changed mid-game
+const onGamesToWinChanged = selectGamesToWin.addEventListener('change',()=>{
+    game.gamesToWin = selectGamesToWin.value;
+    game.reset();
+});
 
-const gamesToWin = document.querySelector('#gamesToWin').value;
+//Generates a Player Object
+function Player(htmlElement){
+    this.isWinner = undefined;
+    this.score = 0; 
+    //the html scoreboard element
+    this.htmlElement = htmlElement; 
 
-const txtScorePlayer1 = document.querySelector('#score-player1');
-const txtScorePlayer2 = document.querySelector('#score-player2');
-
-let scorePlayer1 = 0; 
-let scorePlayer2 = 0; 
-let GameOver = false; 
-
-function setText(element, value){
-    element.textContent = value; 
-}
-
-function togglePlayerButtons()
-{
-    buttonPlayer1.toggleAttribute('disabled');
-    buttonPlayer2.toggleAttribute('disabled');
-}
-
-buttonPlayer1.addEventListener('click', function(){
-    console.log(gamesToWin);
-    scorePlayer1++;
-    setText(txtScorePlayer1, scorePlayer1);
-    if(scorePlayer1 == gamesToWin){
-        gameOver = true;
-        togglePlayerButtons();
+    //Increments, then updates the html element
+    this.scores = function(){
+        this.score++; 
+        this.htmlElement.textContent = this.score; 
+        if(this.score == game.getGamesToWin()){
+            game.GameOver(); 
+        }
     }
+    //Toggle CSS to winner class
+    this.toggleWins = function(){
+        this.htmlElement.classList.toggle('winner'); 
+    }
+    //Toggle CSS to loser class
+    this.toggleLoses = function(){
+        this.htmlElement.classList.toggle('loser');
+    }
+    //Resets to default state
+    this.reset = function(){ 
+        this.score = 0;
+        this.htmlElement.textContent = this.score;  
+        if(this.isWinner === true){
+            this.toggleWins();
+        } else if(this.isWinner === false){
+            this.toggleLoses();
+        }
+        this.isWinner = undefined; 
+    }
+}
+
+const game = {
+    isGameOver: false, 
+    gamesToWin: selectGamesToWin.value, 
+    controlPlayer1: document.querySelector('#button-player1'),
+    controlPlayer2: document.querySelector('#button-player2'),
+
+    player1: new Player(document.querySelector('#score-player1')),
+    player2: new Player(document.querySelector('#score-player2')),
+
+    getGamesToWin(){
+        return this.gamesToWin; 
+    },
+    //Set Game State = GameOver
+    GameOver(){
+        this.isGameOver = true; 
+        this.decideWinner();
+        this.toggleButtonsDisabled();
+    },
+    //Decide The Winner and update status
+    decideWinner(){
+        if(this.player1.score > this.player2.score){
+            this.player1.toggleWins();
+            this.player1.isWinner = true; 
+            this.player2.toggleLoses();
+            this.player2.isWinner = false;
+        } else {
+            this.player1.toggleLoses();
+            this.player1.isWinner = false; 
+            this.player2.toggleWins();
+            this.player2.isWinner = true; 
+        }
+    },
+
+    //Toggle controls to be disabled or enabled
+    toggleButtonsDisabled(){
+        buttonPlayer1.toggleAttribute('disabled');
+        buttonPlayer2.toggleAttribute('disabled');
+    },
+    //Reset the game state back to default
+    reset(){
+        this.player1.reset();
+        this.player2.reset();
+    }
+};
+//Button1 is pressed
+buttonPlayer1.addEventListener('click', function(){
+    game.player1.scores();
+    console.log(game.gamesToWin);
 });
+//Button2 is pressed
 buttonPlayer2.addEventListener('click', function(){
-    scorePlayer2++;
-    setText(txtScorePlayer2, scorePlayer2);
+    game.player2.scores();
 });
-
+//ResetButton is pressed
 buttonReset.addEventListener('click',function(){
-    scorePlayer1 = 0; 
-    scorePlayer2 = 0; 
-    txtScorePlayer1.textContent = scorePlayer1; 
-    txtScorePlayer2.textContent = scorePlayer2;
-
-
+   game.reset();
+   
+   if(game.isGameOver == true){
+    game.toggleButtonsDisabled();
+   }
+   game.isGameOver = false; 
 });
