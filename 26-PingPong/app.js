@@ -2,11 +2,6 @@ const buttonPlayer1 = document.querySelector('#button-player1');
 const buttonPlayer2 = document.querySelector('#button-player2');
 const buttonReset = document.querySelector('#button-reset');
 const selectGamesToWin = document.querySelector('#gamesToWin');
-//Event updates the value in case it is changed mid-game
-const onGamesToWinChanged = selectGamesToWin.addEventListener('change',()=>{
-    game.gamesToWin = selectGamesToWin.value;
-    game.reset();
-});
 
 //Generates a Player Object
 function Player(htmlElement){
@@ -84,8 +79,14 @@ const game = {
     },
     //Reset the game state back to default
     reset(){
-        this.player1.reset();
-        this.player2.reset();
+      this.player1.reset();
+      this.player2.reset();
+
+           
+      if(game.isGameOver == true){
+      game.toggleButtonsDisabled();
+      }
+      game.isGameOver = false; 
     }
 };
 //Button1 is pressed
@@ -100,9 +101,9 @@ buttonPlayer2.addEventListener('click', function(){
 //ResetButton is pressed
 buttonReset.addEventListener('click',function(){
    game.reset();
-   
-   if(game.isGameOver == true){
-    game.toggleButtonsDisabled();
-   }
-   game.isGameOver = false; 
+});
+//Event updates the value in case it is changed mid-game
+const onGamesToWinChanged = selectGamesToWin.addEventListener('change',()=>{
+   game.gamesToWin = selectGamesToWin.value;
+   game.reset();
 });
