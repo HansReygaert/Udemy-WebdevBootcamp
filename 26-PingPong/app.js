@@ -9,9 +9,9 @@ function Player(htmlElement){
     this.score = 0; 
     //the html scoreboard element
     this.htmlElement = htmlElement; 
-
+}
     //Increments, then updates the html element
-    this.scores = function(){
+    Player.prototype.scores = function(){
         this.score++; 
         this.htmlElement.textContent = this.score; 
         if(this.score == game.getGamesToWin()){
@@ -19,15 +19,15 @@ function Player(htmlElement){
         }
     }
     //Toggle CSS to winner class
-    this.toggleWins = function(){
+    Player.prototype.toggleWins = function(){
         this.htmlElement.classList.toggle('winner'); 
     }
     //Toggle CSS to loser class
-    this.toggleLoses = function(){
+    Player.prototype.toggleLoses = function(){
         this.htmlElement.classList.toggle('loser');
     }
     //Resets to default state
-    this.reset = function(){ 
+    Player.prototype.reset = function(){ 
         this.score = 0;
         this.htmlElement.textContent = this.score;  
         if(this.isWinner === true){
@@ -37,7 +37,7 @@ function Player(htmlElement){
         }
         this.isWinner = undefined; 
     }
-}
+
 
 const game = {
     isGameOver: false, 
@@ -92,7 +92,6 @@ const game = {
 //Button1 is pressed
 buttonPlayer1.addEventListener('click', function(){
     game.player1.scores();
-    console.log(game.gamesToWin);
 });
 //Button2 is pressed
 buttonPlayer2.addEventListener('click', function(){
