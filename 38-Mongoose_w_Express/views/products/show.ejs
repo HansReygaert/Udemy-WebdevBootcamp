@@ -11,7 +11,9 @@
       <li>Price: $<%= product.price %> </li>
       <li>Category: <%= product.category %> </li>
    </ul>
-   <a href="/products">Back to product list</a>
    <a href="/products/<%= product._id %>/edit">Edit this product</a>
+   <a href="/products/<%= product._id %>?_method=DELETE" method="POST">Delete this product</a>
+   <br>
+   <a href="/products">Back to product list</a>
 </body>
 </html>
