@@ -16,11 +16,14 @@
         
         <label for="category">Choose a category: </label>
         <select name="category" id="category">
-            <option value="fruit">Fruit</option>
-            <option value="vegetable">Vegetable</option>
-            <option value="dairy">Dairy</option>
+            <% for(let category of categories) { %>
+                <option value="<%= category %>" >
+                        <%= category %>
+                    </option>     
+            <% } %>  
         </select>
         <button>Add Product</button>
     </form>
+    <a href="/products/">Back</a>
 </body>
 </html>

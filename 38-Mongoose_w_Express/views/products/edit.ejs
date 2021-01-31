@@ -7,7 +7,6 @@
 </head>
 <body>
     <form  method="POST" action="/products/<%= product._id %>?_method=PUT">
-        <p><%= product._id %></p>
         <label for="name">Name: </label>
         <input type="text" name="name" id="name"
             placeholder="<%= product.name %>" value="<%= product.name %>">
@@ -18,11 +17,16 @@
         
         <label for="category">Choose a category: </label>
         <select name="category" id="category">
-            <option value="fruit">Fruit</option>
-            <option value="vegetable">Vegetable</option>
-            <option value="dairy">Dairy</option>
+            <% for(let category of categories) { %>
+                <option value="<%= category %>" 
+                    <%= product.category === category ? "selected" : "" %>
+                    >
+                        <%= category %>
+                    </option>     
+            <% } %>  
         </select>
         <button>Save Product</button>
     </form>
+    <a href="/products/<%= product._id %> ">Cancel</a>
 </body>
 </html>
