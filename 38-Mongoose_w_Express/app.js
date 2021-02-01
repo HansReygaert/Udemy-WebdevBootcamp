@@ -81,3 +81,11 @@ app.put('/products/:id', async (req, res) => {
 
    res.redirect(`/products/${product._id}`);
 });
+
+app.delete('/products/:id', async (req, res) => {   
+   const { id } = req.params;
+   await Product.findByIdAndDelete(id);
+   console.log(`Removing product with id: ${id}`);
+   res.redirect('/products');
+   console.log('Redirecting to /products/');
+});
