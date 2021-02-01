@@ -39,8 +39,15 @@ const e = require('express');
 // ROUTES ------------------------------------
 
 app.get('/products', async (req, res) => {
-   const products = await Product.find();
-   res.render('./products/index', { products });
+   const { category } = req.query;
+   if (category){
+      const products = await Product.find({ category: category });
+      res.render('./products/index', { products, category  });
+   
+   } else { 
+      const products = await Product.find();
+      res.render('./products/index', { products, category: undefined });
+   }
    console.log('rendering products/');
 });
 
@@ -55,6 +62,7 @@ app.get('/products/:id', async (req,res) => {
    res.render('products/show', { product });
    console.log('rendering products/show');
 });
+
 
 
 

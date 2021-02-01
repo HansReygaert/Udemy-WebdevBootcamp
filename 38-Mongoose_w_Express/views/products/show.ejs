@@ -9,7 +9,8 @@
    <h1><%= product.name %> </h1>
    <ul>
       <li>Price: $<%= product.price %> </li>
-      <li>Category: <%= product.category %> </li>
+      <li>Category: <a href="/products?category=<%= product.category %>">
+         <%= product.category %></a> </li>
    </ul>
    <form action="/products/<%= product._id %>/edit">
       <button>Edit</button>
