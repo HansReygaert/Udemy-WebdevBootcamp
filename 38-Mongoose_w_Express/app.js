@@ -39,8 +39,15 @@ const e = require('express');
 // ROUTES ------------------------------------
 
 app.get('/products', async (req, res) => {
-   const products = await Product.find();
-   res.render('./products/index', { products });
+   const { category } = req.query;
+   if (category){
+      const products = await Product.find({ category: category });
+      res.render('./products/index', { products, category  });
+   
+   } else { 
+      const products = await Product.find();
+      res.render('./products/index', { products, category: undefined });
+   }
    console.log('rendering products/');
 });
 
@@ -55,6 +62,7 @@ app.get('/products/:id', async (req,res) => {
    res.render('products/show', { product });
    console.log('rendering products/show');
 });
+
 
 
 
@@ -80,4 +88,12 @@ app.put('/products/:id', async (req, res) => {
       req.body, {runValidators: true, new: true});
 
    res.redirect(`/products/${product._id}`);
+});
+
+app.delete('/products/:id', async (req, res) => {   
+   const { id } = req.params;
+   await Product.findByIdAndDelete(id);
+   console.log(`Removing product with id: ${id}`);
+   res.redirect('/products');
+   console.log('Redirecting to /products/');
 });
