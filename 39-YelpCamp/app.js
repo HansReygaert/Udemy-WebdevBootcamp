@@ -36,30 +36,32 @@ const { error } = require('console');
       //GET ROUTES
 app.get('/', (req, res) => {
    res.render('home');
-   console.log('EXPRESS: rendering home');
+   console.log('EXPRESS: GET /');
 });
 
 app.get('/campgrounds', async (req, res) => {
    const campgrounds = await Campground.find({});
    res.render('campgrounds/index', {campgrounds});
-   console.log('EXPRESS: rendering index');
+   console.log('EXPRESS: GET /campgrounds');
 });
 
 app.get('/campgrounds/new', (req, res) => {
    res.render('campgrounds/new');
-   console.log('EXPRESS: rendering new');
+   console.log('EXPRESS: GET campgrounds/new');
 });
 
 app.get('/campgrounds/:id', async (req,res) => {
+   console.log(req.params.id);
    const campground = await Campground.findById(req.params.id);
    res.render('campgrounds/show', { campground }); 
-   console.log('EXPRESS: rendering show');
+   console.log(`EXPRESS: GET - show \n ${campground}`);  
 });
 
    //POST ROUTES
 app.post('/campgrounds', async (req,res) => {
    const campground = new Campground(req.body.campground); 
+   console.log(campground);
    await campground.save();
-   res.redirect(`campgrounds/show/${campground._id}`);
-   console.log(`EXPRESS: redirecting to /show/${campground._id}`);
+   res.redirect(`campgrounds/${campground._id}`);
+   console.log(`EXPRESS: POST - /show/${campground._id}`);
 });
