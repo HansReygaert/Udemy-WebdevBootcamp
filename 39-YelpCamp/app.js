@@ -86,3 +86,12 @@ app.put('/campgrounds/:id', async(req, res) => {
    res.redirect(`/campgrounds/${campground._id}`);
    console.log(`EXPRESS: Redirecting to /campgrounds/${campground._id}`);
 });
+   //DELETE ROUTES
+app.delete('/campgrounds/:id', async(req,res) => {
+   console.log(`EXPRESS: DELETE - /campgrounds/:id`);
+   const { id } = req.params;
+   const deletedCampground = await Campground.findByIdAndDelete(id);
+   console.log(`MONGOOSE: Deleted the following element 
+   \n ${deletedCampground}`);
+   res.redirect(`/campgrounds`);
+})
