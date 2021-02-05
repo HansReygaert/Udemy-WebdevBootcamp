@@ -1,3 +1,6 @@
+//Method-Override
+const methodOverride = require('method-override');
+
 //Mongoose
 const mongoose = require('mongoose'); 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', 
@@ -23,6 +26,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true}));
+app.use(methodOverride('_method'));
 
 app.listen(EXPRESS_PORT_NUMBER, ()=> { 
    console.log(`EXPRESS: Listening to port ${EXPRESS_PORT_NUMBER}`);  
@@ -35,33 +39,50 @@ const { error } = require('console');
 //ROUTES
       //GET ROUTES
 app.get('/', (req, res) => {
-   res.render('home');
    console.log('EXPRESS: GET /');
+   res.render('home');
 });
 
 app.get('/campgrounds', async (req, res) => {
+   console.log('EXPRESS: GET /campgrounds');
    const campgrounds = await Campground.find({});
    res.render('campgrounds/index', {campgrounds});
-   console.log('EXPRESS: GET /campgrounds');
 });
 
 app.get('/campgrounds/new', (req, res) => {
+   console.log('EXPRESS: GET /campgrounds/new');
    res.render('campgrounds/new');
-   console.log('EXPRESS: GET campgrounds/new');
 });
 
 app.get('/campgrounds/:id', async (req,res) => {
-   console.log(req.params.id);
+   console.log(`EXPRESS: GET - /campgrounds/:id`); 
    const campground = await Campground.findById(req.params.id);
    res.render('campgrounds/show', { campground }); 
-   console.log(`EXPRESS: GET - show \n ${campground}`);  
+});
+
+app.get('/campgrounds/:id/edit', async (req,res) => {
+   console.log(`EXPRESS: GET - /campgrounds/:id/edit`);
+   const campground = await Campground.findById(req.params.id);
+   res.render('campgrounds/edit', { campground }); 
 });
 
    //POST ROUTES
 app.post('/campgrounds', async (req,res) => {
+   console.log(`EXPRESS: POST - /campgrounds`);
    const campground = new Campground(req.body.campground); 
    console.log(campground);
    await campground.save();
+   console.log(`MONGOOSE: Saved following element \n ${campground}`);
    res.redirect(`campgrounds/${campground._id}`);
-   console.log(`EXPRESS: POST - /show/${campground._id}`);
+   console.log(`EXPRESS: Redirecting to /campgrounds/${campground._id}`);
+});
+   //PUT ROUTES
+app.put('/campgrounds/:id', async(req, res) => {
+   console.log(`EXPRESS: PUT - /campgrounds/:id`);
+   const { id } = req.params; 
+   const campground = await Campground.findByIdAndUpdate(id, 
+      {...req.body.campground});
+   console.log(`MONGOOSE: Updated the following element \n ${campground}`);
+   res.redirect(`/campgrounds/${campground._id}`);
+   console.log(`EXPRESS: Redirecting to /campgrounds/${campground._id}`);
 });
