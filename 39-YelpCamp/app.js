@@ -27,6 +27,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
    //MIDDLEWARE
+   const ejsMate = require('ejs-mate');
+   app.engine('ejs', ejsMate);
       //Morgan 
    const morgan = require('morgan');
    app.use(morgan('common'));
@@ -46,27 +48,29 @@ app.listen(EXPRESS_PORT_NUMBER, ()=> {
 
 //ROUTES
       //GET ROUTES
-app.get('/', (req, res) => {
-   res.render('home');
+app.get('/',  (req, res) => {
+   res.render('home', { title: 'Yelp-Camp | HOME'});
 });
 
 app.get('/campgrounds', async (req, res) => {
    const campgrounds = await Campground.find({});
-   res.render('campgrounds/index', {campgrounds});
+   res.render('campgrounds/index', 
+   { campgrounds, title: 'Yelp-Camp | Campgrounds'});
 });
 
 app.get('/campgrounds/new', (req, res) => {
-   res.render('campgrounds/new');
+   res.render('campgrounds/new', {title: 'Yelp-Camp | New Campground'});
 });
 
 app.get('/campgrounds/:id', async (req,res) => {
    const campground = await Campground.findById(req.params.id);
-   res.render('campgrounds/show', { campground }); 
+   const { title } = campground; 
+   res.render('campgrounds/show', { campground, title: `Yelp-Camp | ${title}` }); 
 });
 
 app.get('/campgrounds/:id/edit', async (req,res) => {
    const campground = await Campground.findById(req.params.id);
-   res.render('campgrounds/edit', { campground }); 
+   res.render('campgrounds/edit', { campground, title: `Yelp-Camp | Edit Campground` }); 
 });
 
    //POST ROUTES
@@ -95,5 +99,5 @@ app.delete('/campgrounds/:id', async(req,res) => {
 
 //404 ERROR code
 app.use((req, res) => { 
-   res.status(404).send('ERROR 404, page not found! ');
+   res.status(404).send('ERROR 404, page not found!');
 })

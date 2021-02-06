@@ -1,5 +1,5 @@
-<%- include('../partials/head') %> 
-<body>
+<% layout('/layouts/boilerplate') %> 
+
    <h1><%= campground.title %></h1>
    <h2><%= campground.location %></h2>
   
@@ -11,5 +11,3 @@
       <button><a href="/campgrounds/<%= campground._id %>/edit">Edit</a></button>
       <button><a href="/campgrounds">Cancel</a></button>
    </footer>
-</body>
-</html>

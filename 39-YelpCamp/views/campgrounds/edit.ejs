@@ -1,5 +1,4 @@
-<%- include('../partials/head') %> 
-<body>
+<% layout('/layouts/boilerplate') %> 
    <h1>Edit campground</h1>
    <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post">
       <div>
@@ -17,5 +16,3 @@
       <footer>
          <button><a href="/campgrounds/<%= campground._id %>">Cancel</a></button>
       </footer>
-</body>
-   </html>

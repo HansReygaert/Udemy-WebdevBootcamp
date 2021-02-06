@@ -19,16 +19,6 @@ mongoose.connect(MONGOOSE_LINK,
       category: 'fruit'
    });
 
-   // grapeFruit.save()
-   // .then(grapeFruit => {
-   //    console.log('Saving grapeFruit');   
-   //    console.log(grapeFruit); 
-   //    })
-   //    .catch( error => {
-   //       console.log('Database ERROR--------------')
-   //       console.log(error);
-   //    });
-
 const seedProducts = [
    {
       name: 'Fairy Eggplant',

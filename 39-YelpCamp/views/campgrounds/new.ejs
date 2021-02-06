@@ -1,5 +1,5 @@
-<%- include('../partials/head') %> 
-<body>
+<% layout('/layouts/boilerplate') %> 
+
    <form action="/campgrounds" method="post">
    <div>
       <label for="title">Title</label>
@@ -12,5 +12,3 @@
    <button>Add a campground</button>
    </form>
    <a href="/campgrounds">All campgrounds</a>
-</body>
-</html>

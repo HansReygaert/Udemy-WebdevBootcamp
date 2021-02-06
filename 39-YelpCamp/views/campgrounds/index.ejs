@@ -1,11 +1,19 @@
-<%- include('../partials/head') %> 
-<body>
+<% layout('/layouts/boilerplate') %> 
+
    <h1>All Campgrounds</h1>
    <p><a href="campgrounds/new">Add</a> your own campground </p>
    <ul class='campground-grid-container'>
       <% for(let campground of campgrounds) { %>
-         <li><a href="./campgrounds/<%= campground._id %>"><%= campground.title %></a></li>
+         <li>
+            <a href="./campgrounds/<%= campground._id %>"
+            class='  list-group-item 
+                     list-group-item-action 
+                     list-group-horizontal
+                     
+                     '>
+            <!-- Content goes here -->
+            <%= campground.title %>
+            </a>
+         </li>
       <% } %> 
    </ul>
-</body>
-</html>
