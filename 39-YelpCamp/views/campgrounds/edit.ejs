@@ -1,4 +1,4 @@
-<% layout('/layouts/boilerplate') %> 
+<!-- <% layout('/layouts/boilerplate') %> 
    <h1>Edit campground</h1>
    <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post">
       <div>
@@ -15,4 +15,59 @@
       </form>
       <footer>
          <button><a href="/campgrounds/<%= campground._id %>">Cancel</a></button>
-      </footer>
+      </footer> -->
+
+      <% layout('/layouts/boilerplate') %> 
+
+<div class="row">
+   <h1 class="text-center">New Campground</h1>
+   <div class="col-6 offset-3">
+      <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post">
+         <!-- TITLE -->
+         <div class="mb-3"> 
+            <label class="form-label" for="title">
+               Title
+            </label>
+            <input class="form-control" type="text" id="title" 
+            name="campground[title]" value="<%= campground.title %>">
+         </div>
+         <!-- LOCATION -->
+         <div class="mb-3">
+            <label class="form-label" for="location">Location</label>
+            <input class="form-control" type="text" id="location" 
+            name="campground[location]" value="<%= campground.location %>">
+         </div>
+         <!-- PRICE -->
+         <div class="mb-3">
+            <label class="form-label" for="price">Price</label>
+            <div class="input-group">
+               <div class="input-group-prepend">
+                 <span class="input-group-text">$</span>
+               </div>
+               <input id="price" name="campground[price]" type="text" 
+               class="form-control" aria-label="Amount (to the nearest dollar)"
+               placeholder="0.00" aria-describedby="price-label"
+               value="<%= campground.price %>">
+             </div>   
+         </div>
+         <!-- IMAGE -->
+         <div class="mb-3">
+            <label class="form-label" for="image">Image URL</label>
+            <input class="form-control" type="text" id="image" 
+            name="campground[image]" value="<%= campground.image %>">
+         </div>
+         <!-- Description -->
+         <div class="mb-3">
+            <label class="form-label" for="description">Description</label>
+            <textarea class="form-control" type="text" 
+               id="description" name="campground[description]">
+            <%= campground.description %> 
+            </textarea>
+         </div>
+         <!-- BUTTON -->
+         <button class="btn btn-info mb-3">Update campground</button>
+         </form>
+         <a class="btn btn-secondary" href="/campgrounds/<%= campground._id %>">Cancel</a>
+         <a class="btn btn-outline-dark" href="/campgrounds">All campgrounds</a>
+   </div>
+</div>

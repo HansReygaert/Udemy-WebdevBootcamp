@@ -1,4 +1,16 @@
-.campground-grid-container{
+/* .campground-grid-container{
    display: grid;
    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+} */
+
+.image-default-size{
+   object-fit: scale-down;
+   height: 65vh;
+}
+
+.image-thumbnail{
+   float: left;
+   object-fit: scale-down;
+   display: inline;
+   height: 15vh;
 }
