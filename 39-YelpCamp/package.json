@@ -4,7 +4,8 @@
   "description": "Review and create campgrounds like yelp;",
   "main": "app.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "start": "nodemon app.js"
   },
   "keywords": [
     "Colt",

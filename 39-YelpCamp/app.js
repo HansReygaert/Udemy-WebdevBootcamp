@@ -15,7 +15,6 @@ db.once('open', () => {
 
 //MODEL 
 const Campground = require('./models/campground');
-const { error } = require('console');
 
 //EXPRESS
 const express = require('express'); 
@@ -27,6 +26,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
    //MIDDLEWARE
+      //Error handling
+   const ExpressError = require('./utils/ExpressError');
+   const catchAsync = require('./utils/catchAsync');
+      //EJS MATE
    const ejsMate = require('ejs-mate');
    app.engine('ejs', ejsMate);
       //Morgan 
@@ -40,7 +43,6 @@ app.set('views', path.join(__dirname, 'views'));
    //STATICS ASSETS
    app.use(express.static(path.join(__dirname, 'public')));
 
-
 //EXPRESS LISTEN AND 404
 app.listen(EXPRESS_PORT_NUMBER, ()=> { 
    console.log(`EXPRESS: Listening to port ${EXPRESS_PORT_NUMBER}`);  
@@ -52,52 +54,76 @@ app.get('/',  (req, res) => {
    res.render('home', { title: 'Yelp-Camp | HOME'});
 });
 
-app.get('/campgrounds', async (req, res) => {
-   const campgrounds = await Campground.find({});
-   res.render('campgrounds/index', 
-   { campgrounds, title: 'Yelp-Camp | Campgrounds'});
-});
+app.get('/campgrounds', catchAsync(async (req, res, next) => {
+      const campgrounds = await Campground.find({});
+      res.render('campgrounds/index', 
+      { campgrounds, title: 'Yelp-Camp | Campgrounds'});
+}));
 
-app.get('/campgrounds/new', (req, res) => {
+app.get('/campgrounds/new', (req, res, next) => {
    res.render('campgrounds/new', {title: 'Yelp-Camp | New Campground'});
 });
 
-app.get('/campgrounds/:id', async (req,res) => {
-   const campground = await Campground.findById(req.params.id);
-   const { title } = campground; 
-   res.render('campgrounds/show', { campground, title: `Yelp-Camp | ${title}` }); 
-});
+app.get('/campgrounds/:id', catchAsync(async (req,res, next) => {
+      const campground = await Campground.findById(req.params.id, (err) => {
+         if(err) { 
+            return next(new ExpressError('Error 404, Page not found', 404));
+         }
+      });
 
-app.get('/campgrounds/:id/edit', async (req,res) => {
-   const campground = await Campground.findById(req.params.id);
-   res.render('campgrounds/edit', { campground, title: `Yelp-Camp | Edit Campground` }); 
-});
+      const { title } = campground; 
+      
+      res.render('campgrounds/show', { campground, title: `Yelp-Camp | ${title}` });
+}));
+
+app.get('/campgrounds/:id/edit', catchAsync(async (req,res, next) => {
+      const campground = await Campground.findById(req.params.id, (err) => {
+         if(err) {
+            return next(new ExpressError('Error 404, Page not found', 404))
+         }
+      });
+      
+      res.render('campgrounds/edit', { 
+         campground, title: `Yelp-Camp | Edit Campground` 
+      }); 
+}));
 
    //POST ROUTES
-app.post('/campgrounds', async (req,res) => {
-   const campground = new Campground(req.body.campground); 
-   await campground.save();
-   console.log(`MONGOOSE: Saved following element \n ${campground}`);
-   res.redirect(`campgrounds/${campground._id}`);
-});
+app.post('/campgrounds', catchAsync(async (req,res, next) => {
+      const campground = new Campground(req.body.campground); 
+      await campground.save();
+      console.log(`MONGOOSE: Saved following element \n ${campground}`);
+      res.redirect(`campgrounds/${campground._id}`);
+}));
    //PUT ROUTES
-app.put('/campgrounds/:id', async(req, res) => {
-   const { id } = req.params; 
-   const campground = await Campground.findByIdAndUpdate(id, 
-      {...req.body.campground});
-   console.log(`MONGOOSE: Updated the following element \n ${campground}`);
-   res.redirect(`/campgrounds/${campground._id}`);
-});
+app.put('/campgrounds/:id', catchAsync(async(req, res, next) => {
+      const { id } = req.params; 
+      const campground = await Campground.findByIdAndUpdate(id, 
+       {...req.body.campground});
+      console.log(`MONGOOSE: Updated the following element \n ${campground}`);
+      res.redirect(`/campgrounds/${campground._id}`);
+}));
    //DELETE ROUTES
-app.delete('/campgrounds/:id', async(req,res) => {
+app.delete('/campgrounds/:id', catchAsync(async(req,res, next) => {
    const { id } = req.params;
    const deletedCampground = await Campground.findByIdAndDelete(id);
    console.log(`MONGOOSE: Deleted the following element 
    \n ${deletedCampground}`);
    res.redirect(`/campgrounds`);
-})
+}));
 
-//404 ERROR code
-app.use((req, res) => { 
-   res.status(404).send('ERROR 404, page not found!');
-})
+//ERROR code
+app.all('*', (req, res, next) => { 
+   next(new ExpressError('Page not found', 404));
+});
+
+app.use((err, req, res, next) =>{ 
+   const {  message = "Something went wrong",
+            statusCode  = 500
+         } = err;
+   
+   console.log(`Error ${statusCode}: ${message}`);
+   res.status(statusCode).send(message);
+   next(err);
+});
+
