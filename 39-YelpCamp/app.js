@@ -29,6 +29,8 @@ app.set('views', path.join(__dirname, 'views'));
       //Error handling
    const ExpressError = require('./utils/ExpressError');
    const catchAsync = require('./utils/catchAsync');
+      //Validate Schema - Requires Joi 
+   const campgroundSchema = require('./validation/schemas')
       //EJS MATE
    const ejsMate = require('ejs-mate');
    app.engine('ejs', ejsMate);
@@ -48,6 +50,17 @@ app.listen(EXPRESS_PORT_NUMBER, ()=> {
    console.log(`EXPRESS: Listening to port ${EXPRESS_PORT_NUMBER}`);  
 }).on('error', console.error.bind(console, 'EXPRESS: Error'));
 
+//VALIDATION 
+   const validateCampground = (req, res, next) => {
+      const { error } = campgroundSchema.validate(req.body);
+      if(error){
+         const msg = error.details.map( el => el.message).join(', ');
+         throw new ExpressError(msg, 400);
+      } else { 
+         next();
+      }
+   };
+
 //ROUTES
       //GET ROUTES
 app.get('/',  (req, res) => {
@@ -65,12 +78,11 @@ app.get('/campgrounds/new', (req, res, next) => {
 });
 
 app.get('/campgrounds/:id', catchAsync(async (req,res, next) => {
-      const campground = await Campground.findById(req.params.id, (err) => {
-         if(err) { 
-            return next(new ExpressError('Error 404, Page not found', 404));
-         }
-      });
-
+   const campground = await Campground.findById(req.params.id, (err) => {
+      if(err) { 
+         return next(new ExpressError('Campground not found', 404));
+      }
+   });
       const { title } = campground; 
       
       res.render('campgrounds/show', { campground, title: `Yelp-Camp | ${title}` });
@@ -78,8 +90,8 @@ app.get('/campgrounds/:id', catchAsync(async (req,res, next) => {
 
 app.get('/campgrounds/:id/edit', catchAsync(async (req,res, next) => {
       const campground = await Campground.findById(req.params.id, (err) => {
-         if(err) {
-            return next(new ExpressError('Error 404, Page not found', 404))
+         if(err){
+            return next(new ExpressError('Campground not found', 404));
          }
       });
       
@@ -89,14 +101,14 @@ app.get('/campgrounds/:id/edit', catchAsync(async (req,res, next) => {
 }));
 
    //POST ROUTES
-app.post('/campgrounds', catchAsync(async (req,res, next) => {
+app.post('/campgrounds', validateCampground, catchAsync(async (req,res, next) => {
       const campground = new Campground(req.body.campground); 
       await campground.save();
       console.log(`MONGOOSE: Saved following element \n ${campground}`);
       res.redirect(`campgrounds/${campground._id}`);
 }));
    //PUT ROUTES
-app.put('/campgrounds/:id', catchAsync(async(req, res, next) => {
+app.put('/campgrounds/:id', validateCampground, catchAsync(async(req, res, next) => {
       const { id } = req.params; 
       const campground = await Campground.findByIdAndUpdate(id, 
        {...req.body.campground});
@@ -113,17 +125,21 @@ app.delete('/campgrounds/:id', catchAsync(async(req,res, next) => {
 }));
 
 //ERROR code
-app.all('*', (req, res, next) => { 
-   next(new ExpressError('Page not found', 404));
+app.all('*', (req, res, next) => {
+   const Error404 = new ExpressError('Page not found', 404); 
+   console.log('ERROR: NO ROUTE FOUND, SENDING ERROR TO MIDDLEWARE');
+   next(Error404);
 });
 
-app.use((err, req, res, next) =>{ 
-   const {  message = "Something went wrong",
+//Catch-all for all errors
+app.use((err, req, res, next) => { 
+   const title = "YelpCamp | Error";
+
+   const {  message = "Internal Server Error",
             statusCode  = 500
          } = err;
-   
-   console.log(`Error ${statusCode}: ${message}`);
-   res.status(statusCode).send(message);
+         
+   res.status(statusCode).render('error', { err, title });
    next(err);
 });
 
