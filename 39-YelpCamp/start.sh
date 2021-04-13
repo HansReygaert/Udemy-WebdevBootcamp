@@ -2,7 +2,7 @@
  PORT="3000"
  MAIN_ENTRY="app.js"
 
-clear 
+echo "********************************"
 echo "Removing Listeners on Port $PORT"
 npx kill-port $PORT
 echo "Starting Nodemon"

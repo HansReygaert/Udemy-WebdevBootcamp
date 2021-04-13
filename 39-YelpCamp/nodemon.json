@@ -10,7 +10,7 @@
     },
     "events": {
       "restart": "./start.sh",
-      "crash": "./start.sh"
+      "crash": "echo '*************** NODEMON CRASHED *******************'"
     },
     "watch": [
       "test/fixtures/",
