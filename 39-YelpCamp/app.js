@@ -4,7 +4,8 @@ mongoose.connect('mongodb://localhost:27017/yelp-camp',
 {
    useUnifiedTopology: true,
    useCreateIndex: true, 
-   useNewUrlParser: true
+   useNewUrlParser: true,
+   useFindAndModify: false
 });
 
 const db = mongoose.connection; 
@@ -25,9 +26,45 @@ const path = require('path');
 
 app.set('view engine', 'ejs'); 
 app.set('views', path.join(__dirname, 'views'));
+//STATICS ASSETS
+app.use(express.static(path.join(__dirname, 'public')));
+//EXPRESS-SESSION
+   //WARNING, THIS IS NOT PRODUCTION READY
+const session = require('express-session'); 
+const COOKIE_MAX_AGE = 1000*60*60*24* 7;
+const COOKIE_EXPIRES_TIME = Date.now() + COOKIE_MAX_AGE;  
+const sessionConfig = {
+   secret: "thisisbad",
+   resave: false, 
+   saveUninitialized: true,
+   cookie: {
+      httpOnly: true, 
+      expires: COOKIE_EXPIRES_TIME,
+      maxAge: COOKIE_MAX_AGE
+   }
+};
+   app.use(session(sessionConfig));
 
+      //Logging tool - Morgan
+      const morgan = require('morgan');
+      // app.use(morgan('combined', {
+      //    skip: function (req, res) { return res.statusCode < 400 }
+      //  }));
+
+//FLASH 
+       //(depends on session)
+const flash = require('connect-flash');
+app.use(flash());
+
+       //flash middleware
+app.use((req,res,next) => { 
+   res.locals.success = req.flash('success');
+   res.locals.error = req.flash('error'); 
+   next();
+})
 //ROUTES
 const campgrounds = require('./routes/campgrounds'); 
+const reviews = require('./routes/reviews');
 
    //MIDDLEWARE
       //Error handling
@@ -38,16 +75,11 @@ const campgrounds = require('./routes/campgrounds');
       //EJS MATE
    const ejsMate = require('ejs-mate');
    app.engine('ejs', ejsMate);
-      //Morgan 
-   const morgan = require('morgan');
-   app.use(morgan('tiny'));
       //URL ENCODED
    app.use(express.urlencoded({ extended: true}));
       //METHOD OVERRIDE
    const methodOverride = require('method-override');
    app.use(methodOverride('_method'));
-   //STATICS ASSETS
-   app.use(express.static(path.join(__dirname, 'public')));
 
 //EXPRESS LISTEN AND 404
 app.listen(EXPRESS_PORT_NUMBER, ()=> { 
@@ -81,29 +113,8 @@ app.get('/',  (req, res) => {
 });
    // campground Routes
 app.use('/campgrounds', campgrounds);
+app.use('/campgrounds/:id/reviews', reviews); 
 
-   //POST ROUTES
-app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req,res) => {
-   console.log(`Posting data to path: /campgrounds/${req.params.id}/reviews`);
-   const campground = await Campground.findById(req.params.id);
-   const review = new Review(req.body.review);
-   campground.reviews.push(review); 
-   await review.save(); 
-   console.log(`MONGOOSE: Saved following element \n ${review}`);
-   await campground.save();
-   console.log(`MONGOOSE: Saved following element \n ${campground}`);
-   res.redirect(`/campgrounds/${campground._id}`);
-}));
-
-//PUT ROUTES
-
-//DELETE ROUTES
-app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async (req, res) => {
-   const { id, reviewId } = req.params;
-   await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-   await Review.findByIdAndDelete(reviewId);
-   res.redirect(`/campgrounds/${id}`);
-}));
 //ERROR code
 app.all('*', (req, res, next) => {
    const Error404 = new ExpressError('Page not found', 404); 

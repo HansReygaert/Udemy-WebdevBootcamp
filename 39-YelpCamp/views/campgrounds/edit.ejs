@@ -3,7 +3,7 @@
 <div class="row">
    <h1 class="text-center">New Campground</h1>
    <div class="col-6 offset-3">
-      <form action="/campgrounds/<%= campground._id %>?_method=PUT" method="post" 
+      <form action="/campgrounds/<%=campground._id%>?_method=PUT" method="post" 
          novalidate class="validated-form">
          <!-- TITLE -->
          <div class="mb-3"> 
@@ -31,7 +31,7 @@
                <input id="price" name="campground[price]" type="text" 
                class="form-control" aria-label="Amount (to the nearest dollar)"
                placeholder="0.00" aria-describedby="price-label"
-               value="<%= campground.price %>" required>
+               value="<%= campground.price %>" required >
                
                <div class="valid-feedback">Looks good!</div>
              </div>   
@@ -54,7 +54,7 @@
          <!-- BUTTON -->
          <button class="btn btn-info mb-3">Update campground</button>
          </form>
-         <a class="btn btn-secondary" href="/campgrounds/<%= campground._id %>">Cancel</a>
+         <a class="btn btn-secondary" href="/campgrounds/<%=campground._id%>">Cancel</a>
          <a class="btn btn-outline-dark" href="/campgrounds">All campgrounds</a>
    </div>
 </div>
