@@ -6,14 +6,17 @@ const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require('../utils/ExpressError');
 
-//FLASH
-const flash = require('connect-flash');
-
 //MODEL 
 const Campground = require('../models/campground');
    //JOI Validation Schema
-const { campgroundSchema } = require('../validation/schemas');
+   const { campgroundSchema } = require('../validation/schemas');
 
+//MIDDLEWARE
+const { isLoggedIn } = require('../middleware');
+//FLASH
+const flash = require('connect-flash');
+
+   
 //VALIDATION 
 const validateCampground = (req, res, next) => {
    const { error } = campgroundSchema.validate(req.body);
@@ -37,7 +40,7 @@ router.get('/', catchAsync(async (req, res, next) => {
 }));
 
 //campgrounds/new
-router.get('/new', (req, res, next) => {
+router.get('/new', isLoggedIn, (req, res) => {
 res.render(`${pathPrefix}/new`)
 });
 
@@ -52,18 +55,20 @@ const campground = await Campground.findById(req.params.id).populate('reviews');
 }));
 
 //campgrounds/:id/edit
-router.get('/:id/edit', catchAsync(async (req,res) => {
+router.get('/:id/edit', isLoggedIn, catchAsync(async (req, res) => {
    const campground = await Campground.findById(req.params.id);
    if(!campground){
       req.flash('error', 'cannot find that campground');
       res.redirect('/campgrounds');
-   } 
+   }
+   
+    
       res.render(`${pathPrefix}/edit`, { campground });
 }));
 
 
    //POST:
-router.post('/', validateCampground, catchAsync(async (req,res, next) => {
+router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, next) => {
    const campground = new Campground(req.body.campground); 
    await campground.save();
    req.flash('succes', 'Successfully made a new campground');
@@ -72,7 +77,7 @@ router.post('/', validateCampground, catchAsync(async (req,res, next) => {
 }));
 
    //PUT:
-router.put('/:id', validateCampground, catchAsync(async(req, res, next) => {
+router.put('/:id', isLoggedIn, validateCampground, catchAsync(async (req, res) => {
    const { id } = req.params; 
    const campground = await Campground.findByIdAndUpdate(id, 
     {...req.body.campground});
@@ -82,7 +87,7 @@ router.put('/:id', validateCampground, catchAsync(async(req, res, next) => {
 }));
 
    //DELETE:
-router.delete('/:id', catchAsync(async(req,res, next) => {
+   router.delete('/:id', isLoggedIn, catchAsync(async (req, res) => {
    const { id } = req.params;
    const deletedCampground = await Campground.findByIdAndDelete(id);
    console.log(`MONGOOSE: Deleted the following element 

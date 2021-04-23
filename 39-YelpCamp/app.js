@@ -15,9 +15,7 @@ db.once('open', () => {
 });
 
 //MODEL 
-const Campground = require('./models/campground');
-const Review = require('./models/review');
-
+const User = require('./models/user');
 //EXPRESS
 const express = require('express'); 
 const app = express(); 
@@ -26,8 +24,12 @@ const path = require('path');
 
 app.set('view engine', 'ejs'); 
 app.set('views', path.join(__dirname, 'views'));
+
+
 //STATICS ASSETS
 app.use(express.static(path.join(__dirname, 'public')));
+var favicon = require('serve-favicon')
+app.use(favicon(path.join(__dirname, 'public/images', 'favicon.ico')))
 //EXPRESS-SESSION
    //WARNING, THIS IS NOT PRODUCTION READY
 const session = require('express-session'); 
@@ -47,24 +49,37 @@ const sessionConfig = {
 
       //Logging tool - Morgan
       const morgan = require('morgan');
-      // app.use(morgan('combined', {
-      //    skip: function (req, res) { return res.statusCode < 400 }
-      //  }));
+      // app.use(morgan('tiny')
 
 //FLASH 
        //(depends on session)
 const flash = require('connect-flash');
 app.use(flash());
 
-       //flash middleware
-app.use((req,res,next) => { 
-   res.locals.success = req.flash('success');
-   res.locals.error = req.flash('error'); 
-   next();
-})
+       //local middleware
+       app.use((req, res, next) => {
+         res.locals.currentUser = req.user;
+         console.log(currentUser);
+         res.locals.success = req.flash('success');
+         res.locals.error = req.flash('error');
+         next();
+     })
+     
+//AUTH
+const passport  = require('passport');
+const LocalStrategy = require('passport-local');
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 //ROUTES
-const campgrounds = require('./routes/campgrounds'); 
-const reviews = require('./routes/reviews');
+const campgroundRoutes = require('./routes/campgrounds');
+const reviewRoutes = require('./routes/reviews');
+const userRoutes = require('./routes/users');
 
    //MIDDLEWARE
       //Error handling
@@ -81,46 +96,31 @@ const reviews = require('./routes/reviews');
    const methodOverride = require('method-override');
    app.use(methodOverride('_method'));
 
-//EXPRESS LISTEN AND 404
+//ROUTES
+      //GET ROUTES
+app.get('/',  (req, res) => {
+   res.render('home');
+});
+// user routes
+app.use('/', userRoutes);
+// campground routes
+app.use('/campgrounds', campgroundRoutes)
+app.use('/campgrounds/:id/reviews', reviewRoutes)
+
+
+//ERROR code
+   //EXPRESS LISTEN AND 404
 app.listen(EXPRESS_PORT_NUMBER, ()=> { 
    console.log(`EXPRESS: Listening to port ${EXPRESS_PORT_NUMBER}`);  
 }).on('error', console.error.bind(console, 'EXPRESS: Error'));
 
-//VALIDATION 
-   const validateCampground = (req, res, next) => {
-      const { error } = campgroundSchema.validate(req.body);
-      if(error){
-         const msg = error.details.map( el => el.message).join(', ');
-         throw new ExpressError(msg, 400);
-      } else { 
-         next();
-      }
-   };
 
-   const validateReview = (req, res, next ) => {
-      const { error } = reviewSchema.validate(req.body);
-      if(error){
-         const msg = error.details.map( el => el.message).join(', ');
-         throw new ExpressError(msg, 400);
-      } else { 
-         next();
-      }
-   }
-//ROUTES
-      //GET ROUTES
-app.get('/',  (req, res) => {
-   res.render('home', { title: 'Yelp-Camp | HOME'});
-});
-   // campground Routes
-app.use('/campgrounds', campgrounds);
-app.use('/campgrounds/:id/reviews', reviews); 
-
-//ERROR code
 app.all('*', (req, res, next) => {
-   const Error404 = new ExpressError('Page not found', 404); 
-   console.log('ERROR: NO ROUTE FOUND, SENDING ERROR TO MIDDLEWARE');
+   const Error404 = new ExpressError(`Page not found`, 404); 
+   console.log(`ERROR: "${req.originalUrl}" NOT FOUND \n SENDING ERROR TO MIDDLEWARE`);
    next(Error404);
 });
+
 
 //Catch-all for all errors
 app.use((err, req, res, next) => { 
@@ -133,4 +133,3 @@ app.use((err, req, res, next) => {
    res.status(statusCode).render('error', { err, title });
    next(err);
 });
-
