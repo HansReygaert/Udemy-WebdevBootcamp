@@ -51,35 +51,37 @@ const sessionConfig = {
       const morgan = require('morgan');
       // app.use(morgan('tiny')
 
-//FLASH 
+      //AUTH
+      const passport  = require('passport');
+      const LocalStrategy = require('passport-local');
+      
+      app.use(passport.initialize());
+      app.use(passport.session());
+      passport.use(new LocalStrategy(User.authenticate()));
+      
+      passport.serializeUser(User.serializeUser());
+      passport.deserializeUser(User.deserializeUser());
+      
+   
+   //ROUTES
+   const campgroundRoutes = require('./routes/campgrounds');
+   const reviewRoutes = require('./routes/reviews');
+   const userRoutes = require('./routes/users');
+
+   //FLASH 
        //(depends on session)
-const flash = require('connect-flash');
-app.use(flash());
+      const flash = require('connect-flash');
+      app.use(flash());
 
        //local middleware
        app.use((req, res, next) => {
-         res.locals.currentUser = req.user;
-         console.log(currentUser);
-         res.locals.success = req.flash('success');
-         res.locals.error = req.flash('error');
+          res.locals.success = req.flash('success');
+          res.locals.error = req.flash('error');
+          res.locals.currentUser = req.user;
+          console.log(res.locals.currentUser);
          next();
      })
      
-//AUTH
-const passport  = require('passport');
-const LocalStrategy = require('passport-local');
-
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate()));
-
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
-//ROUTES
-const campgroundRoutes = require('./routes/campgrounds');
-const reviewRoutes = require('./routes/reviews');
-const userRoutes = require('./routes/users');
 
    //MIDDLEWARE
       //Error handling
