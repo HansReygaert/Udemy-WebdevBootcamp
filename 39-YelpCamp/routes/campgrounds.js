@@ -4,29 +4,15 @@ const router = express.Router();
 
 //ERROR HANDLING 
 const catchAsync = require('../utils/catchAsync');
-const ExpressError = require('../utils/ExpressError');
 
 //MODEL 
 const Campground = require('../models/campground');
    //JOI Validation Schema
-   const { campgroundSchema } = require('../validation/schemas');
 
 //MIDDLEWARE
-const { isLoggedIn } = require('../middleware');
+const { isLoggedIn, isAuthor, validateCampground } = require('../middleware');
 //FLASH
 const flash = require('connect-flash');
-
-   
-//VALIDATION 
-const validateCampground = (req, res, next) => {
-   const { error } = campgroundSchema.validate(req.body);
-   if(error){
-      const msg = error.details.map( el => el.message).join(', ');
-      throw new ExpressError(msg, 400);
-   } else { 
-      next();
-   }
-};
 
 //ROUTES
    //PREFIX
@@ -35,8 +21,7 @@ const validateCampground = (req, res, next) => {
    //GET: 
 router.get('/', catchAsync(async (req, res, next) => {
    const campgrounds = await Campground.find({});
-   res.render(`${pathPrefix}/index`, 
-   { campgrounds, title: 'Yelp-Camp | Campgrounds'});
+   res.render(`${pathPrefix}/index`, { campgrounds });
 }));
 
 //campgrounds/new
@@ -46,23 +31,28 @@ res.render(`${pathPrefix}/new`)
 
 //campgrounds/:id
 router.get('/:id', catchAsync(async (req,res, next) => {
-const campground = await Campground.findById(req.params.id).populate('reviews');   
-   if(!campground){
-      req.flash('error', 'cannot find that campground');
-      res.redirect('/campgrounds');
-   }
-   res.render(`${pathPrefix}/show`, { campground });
+  const campground = await Campground.findById(req.params.id).populate({
+      path: 'reviews',
+      populate: {
+          path: 'author'
+      }
+  }).populate('author');
+  console.log(campground);
+  if (!campground) {
+   req.flash('error', 'Cannot find that campground!');
+   return res.redirect('/campgrounds');
+  }
+  res.render('campgrounds/show', { campground });
 }));
 
 //campgrounds/:id/edit
-router.get('/:id/edit', isLoggedIn, catchAsync(async (req, res) => {
-   const campground = await Campground.findById(req.params.id);
+router.get('/:id/edit', isLoggedIn, isAuthor, catchAsync(async (req, res) => {
+   const { id } = req.params; 
+   const campground = await Campground.findById(id);
    if(!campground){
       req.flash('error', 'cannot find that campground');
       res.redirect('/campgrounds');
    }
-   
-    
       res.render(`${pathPrefix}/edit`, { campground });
 }));
 
@@ -70,6 +60,8 @@ router.get('/:id/edit', isLoggedIn, catchAsync(async (req, res) => {
    //POST:
 router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, next) => {
    const campground = new Campground(req.body.campground); 
+   
+   campground.author = req.user._id;
    await campground.save();
    req.flash('succes', 'Successfully made a new campground');
    console.log(`MONGOOSE: Saved following element \n ${campground}`);
@@ -77,9 +69,10 @@ router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res, nex
 }));
 
    //PUT:
-router.put('/:id', isLoggedIn, validateCampground, catchAsync(async (req, res) => {
+router.put('/:id', isLoggedIn, isAuthor, validateCampground, catchAsync(async (req, res) => {
    const { id } = req.params; 
-   const campground = await Campground.findByIdAndUpdate(id, 
+   
+   campground = await Campground.findByIdAndUpdate(id, 
     {...req.body.campground});
    console.log(`MONGOOSE: Updated the following element \n ${campground}`);
    req.flash('success', 'Successfully edited a campground');
@@ -87,9 +80,9 @@ router.put('/:id', isLoggedIn, validateCampground, catchAsync(async (req, res) =
 }));
 
    //DELETE:
-   router.delete('/:id', isLoggedIn, catchAsync(async (req, res) => {
+   router.delete('/:id', isLoggedIn, isAuthor, catchAsync(async (req, res) => {
    const { id } = req.params;
-   const deletedCampground = await Campground.findByIdAndDelete(id);
+   const deletedCampground = await Campground.findByIdAndDenodelete(id);
    console.log(`MONGOOSE: Deleted the following element 
    \n ${deletedCampground}`);
 

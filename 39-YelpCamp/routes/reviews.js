@@ -13,25 +13,15 @@ const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
 const Review = require('../models/review');
    //JOI Validation Schema
-const { reviewSchema } = require('../validation/schemas');
+const { validateReview, isLoggedIn } = require('../middleware');
 
-//VALIDATION 
- 
- const validateReview = (req, res, next ) => {
-    const { error } = reviewSchema.validate(req.body);
-    if(error){
-       const msg = error.details.map( el => el.message).join(', ');
-       throw new ExpressError(msg, 400);
-    } else { 
-       next();
-    }
- }
 //ROUTES
  //POST
-router.post('/', validateReview, catchAsync(async (req,res) => {
+router.post('/', validateReview, isLoggedIn, catchAsync(async (req,res) => {
     console.log(`Posting data to path: /campgrounds/${req.params.id}/reviews`);
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
+    review.author = req.user._id;
     campground.reviews.push(review); 
     await review.save(); 
     console.log(`MONGOOSE: Saved following element \n ${review}`);
@@ -42,12 +32,12 @@ router.post('/', validateReview, catchAsync(async (req,res) => {
  }));
 
  //DELETE 
-router.delete('/:reviewId', catchAsync(async (req, res) => {
-    const { id, reviewId } = req.params;
-    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
-    req.flash('success', 'successfully removed review');
-    res.redirect(`/campgrounds/${id}`);
+ router.delete('/:reviewId', isLoggedIn, catchAsync(async (req, res) => {
+   const { id, reviewId } = req.params;
+   await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+   await Review.findByIdAndDelete(reviewId);
+   req.flash('success', 'successfully removed review');
+   res.redirect(`/campgrounds/${id}`);
  }));
  
  module.exports = router;
