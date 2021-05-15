@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV !== "production") {
+   console.log('RUNNING IN DEVELOPMENT MODE');
+   require('dotenv').config();
+} else { console.log('RUNNING IN DEVELOPMENT MODE') }
+
 //Mongoose
 const mongoose = require('mongoose'); 
 mongoose.connect('mongodb://localhost:27017/yelp-camp', 
@@ -62,7 +67,6 @@ const sessionConfig = {
       passport.serializeUser(User.serializeUser());
       passport.deserializeUser(User.deserializeUser());
       
-   
    //ROUTES
    const campgroundRoutes = require('./routes/campgrounds');
    const reviewRoutes = require('./routes/reviews');
