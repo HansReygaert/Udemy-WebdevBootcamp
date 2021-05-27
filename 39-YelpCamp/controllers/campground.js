@@ -2,6 +2,7 @@ const Campground = require('../models/campground');
 const pathPrefix = 'campgrounds';
 //FLASH MESSAGE
 const flash = require('connect-flash');
+const campground = require('../models/campground');
 
 module.exports.index = async (req, res, next) => {
     const campgrounds = await Campground.find({});
@@ -14,7 +15,7 @@ module.exports.index = async (req, res, next) => {
 
  module.exports.createCampground = async (req, res, next) => {
     const campground = new Campground(req.body.campground); 
-    campground.images = req.files.map(f => ({url: f.path, filename: f.filename}))
+    campground.images = req.files.map(f => ({url: f.path, filename: f.filename}));
     campground.author = req.user._id;
     await campground.save();
     console.log(campground);
@@ -49,18 +50,22 @@ module.exports.index = async (req, res, next) => {
  }
 
  module.exports.updateCampground = async (req, res) => {
-    const { id } = req.params; 
-    
-    campground = await Campground.findByIdAndUpdate(id, 
-     {...req.body.campground});
-    console.log(`MONGOOSE: Updated the following element \n ${campground}`);
-    req.flash('success', 'Successfully edited a campground');
-    res.redirect(`/${pathPrefix}/${campground._id}`);
+   const { id } = req.params;
+
+   const campground = await Campground.findByIdAndUpdate
+   (id, { ...req.body.campground });
+   const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));
+   campground.images.push(...imgs);
+   await campground.save();
+   
+   console.log(`MONGOOSE: Updated the following element \n ${campground}`);
+   req.flash('success', 'Successfully edited a campground');
+   res.redirect(`/${pathPrefix}/${campground._id}`);
  };
 
  module.exports.deleteCampground = async (req, res) => {
     const { id } = req.params;
-    const deletedCampground = await Campground.findByIdAndDenodelete(id);
+    const deletedCampground = await Campground.findByIdAndDelete(id);
     console.log(`MONGOOSE: Deleted the following element 
     \n ${deletedCampground}`);
  
